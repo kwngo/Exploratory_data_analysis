@@ -23,22 +23,24 @@ wines <- read.csv('wineQualityReds.csv')
 summary(wines)
 ```
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 boxplot(wines[,13])
 ```
+
 From this box plot mapping quality of the wine, we can see most (between 25th - 75th percentile) fall within the range of 4 and 7, with the majority getting a average rating of 5 and 6.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE }
 ggplot(wines, aes(factor(quality))) + geom_histogram()
 ```
 
 This histogram confirms the visualization from the box plot.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE }
 ggplot(wines, aes(x = fixed.acidity)) + geom_histogram() + scale_x_log10()
 
 ggplot(wines, aes(x = volatile.acidity)) + geom_histogram() +  scale_x_log10()
 ```
+
 Fixed acidity is normally distributed.
 - Mean of 8.32
 - median of 7.90
@@ -51,11 +53,12 @@ Volatile acidity is also normally distributed.
 - Minimum of 0.1200
 - Maximum of 1.5800
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE }
 ggplot(wines, aes(x = residual.sugar)) + geom_histogram() + scale_x_log10()
 
 ggplot(wines, aes(x = citric.acid)) + geom_histogram() + scale_x_log10()
 ```
+
 Risidual sugars tend to be very low in red wine.
 - Mean of 2.539
 - Median of 2.200
@@ -68,28 +71,52 @@ On the other hand, citric acid tend to be distributed more to the tail.
 - Minimum of 0.000
 - Max of 1.000
 
-```{r}
-ggplot(wines, aes(x = chlorides)) + geom_histogram() + scale_x_log10() + xlim(0.04, 0.2)
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(wines, aes(x = chlorides)) + geom_histogram() + xlim(0.04, 0.13)
 
 ggplot(wines, aes(x = free.sulfur.dioxide)) + geom_histogram() + scale_x_log10() + xlim(5, 75)
 ```
+
 When controlling for outliers the amount of chloride in red wine has a normal distribution. 
 
 When controlling for the outliers at the tail and head of the distribution of free sulfur dioxide, the majority of wines have a low amount of it.
 
-```{r}
-ggplot(wines, aes(x = pH)) + geom_histogram() + scale_x_log10()
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(wines, aes(x = pH)) + geom_histogram()
 
-ggplot(wines, aes(x = sulphates)) + geom_histogram() + scale_x_log10()
+ggplot(wines, aes(x = sulphates)) + geom_histogram() + xlim(0.4, 1)
 
-ggplot(wines, aes(x = alcohol)) + geom_histogram() + scale_x_log10() + xlim(8, 15)
+ggplot(wines, aes(x = alcohol)) + geom_histogram() + xlim(8, 15)
 
-ggplot(wines, aes(x = quality)) + geom_histogram() + scale_x_log10()
+ggplot(wines, aes(x = factor(quality))) + geom_histogram()
 
 ```
 
+pH is normally distributed.
+- Mean of 3.311
+- Median of 3.310
+- Minimum of 2.740
+- Maximum of 4.010
+
+Sulphates is also normally distributed, when controlling for the long tail.
+- Mean of 0.6581
+- Median of 0.6200
+- Minimum of 0.3300
+- Maximum of 2.000
+
+
 The majority of red wines tend to have lower alcohol levels.
-The majority of red wines were given an average quality rating.
+- Mean of 10.42
+- Median of 10.20
+- Minimum of 8.40
+- Maximum of 14.90
+
+Finally, the majority of red wines were given an average quality rating.
+- Mean of 5.636
+- Median of 6.000
+- Minimum of 3.000
+- Maximum of 8.000
+
 
 To confirm this initial assessment, I added a new categorical variable.
 
@@ -149,30 +176,39 @@ Citric acid was the only type of acid that was not normally distributed. After s
 # Bivariate Plot Section
 ```{r}
 wine_subset <- wines[,2:13]
-names(wine_subset)
-ggpairs(wine_subset) 
+colnames(wine_subset) = c("F.A", "V.A", "Cit.A", "Sug", "CI", 
+                       "F.S02", "S02", "Dens", "pH", "S04","Alc",                          "Q")
+ggpairs(wine_subset, params=list(corSize=3)) + theme(axis.text = element_blank())
 ```
 
-```{r}
+I first use a matrix to quickly find and display some potential relationships between variables. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 grid.arrange(
-  ggplot(data = wines, aes(x = density, y = fixed.acidity)) + geom_point(),
-  ggplot(data = wines, aes(x = pH, y = fixed.acidity)) + geom_point(),
-  ggplot(data = wines, aes(x = pH, y = citric.acid)) + geom_point(),
-  ggplot(data = wines, aes(x = alcohol, y = chlorides)) + geom_point()
+  ggplot(data = wines, aes(x = density, y = fixed.acidity)) + geom_point(alpha=0.5) + xlim(0.990, 1) + geom_smooth(method="lm"),
+  ggplot(data = wines, aes(x = pH, y = fixed.acidity)) + geom_point(alpha=0.5) + xlim(2.8, 3.8) + geom_smooth(method="lm"),
+  ggplot(data = wines, aes(x = pH, y = citric.acid)) + geom_point(alpha=0.5) + xlim(2.8, 4.0) + geom_smooth(method="lm"),
+  ggplot(data = wines, aes(x = alcohol, y = density)) + geom_point(alpha=0.5) + xlim(8, 13) + geom_smooth(method="lm")
 )
 ```
+
+Using scatter plots, I can quickly see the patterns between the two variables and whether the correlation figures seem correct.
+
+- Correlation between density and fixed acidity is 0.668
+- Correlation between pH and fixed acidity is -0.683
+- Correlation between density and citric acidity is -0.542
+- Correlation between alcohol and density is -0.496
+- Correlation between alcohol and quality is 0.476
+
 
 # Bivariate Analysis
 ### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
 From these plots, I observed:
-- There is a positive correlation between quality and citric acid
-- There is a strong negative correlation between pH and quality
-- There is a strong positive correlation between alcohol and quality
-
-- There is strong postive correlation between density and fixed acidity
-- There is a strong negative correlation between pH and fixed acidity
-- Strong negative correlation between pH and citric acid
-- Strong positive correlation between alcohol and chlorides
+- There is a strong positive correlation between alcohol and quality (0.476)
+- There is strong postive correlation between density and fixed acidity (0.669)
+- There is a strong negative correlation between pH and fixed acidity (-0.683)
+- Strong negative correlation between pH and citric acid (-0.542)
+- Strong negative correlation between alcohol and density (-0.496)
 
 ### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
 Not knowing much about wine, I found many interesting relationships. The first of which are that citric acid, pH and alcohol all have strong relationships with the quality of the wine. 
@@ -183,17 +219,19 @@ In addition, a wine that has higher density generally has a higher fixed acidity
 The strongest relationships found were between alcohol and chlorides as well as alcohol and quality.
 
 # Multivariate Plot Section
-```{r}
-ggplot(wines, aes(density, citric.acid, color=quality)) + geom_point()
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(wines, aes(density, citric.acid, color=factor(quality))) + geom_point(alpha=0.5) + geom_smooth(method="lm")
 
-ggplot(wines, aes(pH, fixed.acidity, color=quality)) + geom_point()
+ggplot(wines, aes(pH, fixed.acidity, color=factor(quality))) + geom_point(alpha=0.5) + geom_smooth(method="lm")
 
-ggplot(wines, aes(pH, citric.acid, color=quality)) + geom_point()
+ggplot(wines, aes(pH, citric.acid, color=factor(quality))) + geom_point(alpha=0.5) + geom_smooth(method="lm")
 
-ggplot(wines, aes(pH, alcohol, color=quality)) + geom_point()
+ggplot(wines, aes(pH, alcohol, color=factor(quality))) + geom_point(alpha=0.5) + geom_smooth(method="lm")
 ```
 
-```{r}
+Looking at the same plots as in the bivariate section, except this time I use rank instead of quality.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE }
 ggplot(wines, aes(density, citric.acid, color=rank)) + geom_point()
 
 ggplot(wines, aes(pH, fixed.acidity, color=rank)) + geom_point()
@@ -203,6 +241,18 @@ ggplot(wines, aes(pH, citric.acid, color=rank)) + geom_point()
 ggplot(wines, aes(pH, alcohol, color=rank)) + geom_point()
 ```
 
+Taking a closer look at the relationship between alcohol and pH, using rank we are able to better see the distinction between the three categories of wine. Despite my hypothesis that more basic wines would be rated less highly, this does not appear to be the case.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(wines, aes(pH, alcohol, color=rank)) + geom_point() + ggtitle('Relationship between pH, alcohol and rank') + ylab("Amount of Alcohol") + xlab('pH level')
+```
+
+However, there definitely is a strong correlation between alcohol % and quality. I chose to use a box plot in order to display the quartile information and show the distribution of the wines by quality effectively.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(wines, aes(quality, alcohol, fill=rank)) + geom_boxplot() + ggtitle("Relationship alcohol and quality") + xlab('Wine Quality') + ylab('Amount of Alcohol')
+```
+
 ### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
 - Higher quality red wines tend to have higher density and higher citric acid
 - Higher quality red wines tend to have lower pH and higher fixed acidity, which is consistent with the observation above.
@@ -210,29 +260,32 @@ ggplot(wines, aes(pH, alcohol, color=rank)) + geom_point()
 
 # Final Plots and Summary
 
-
 ## Histogram of Wine Quality
 This plot was created to show the majority of wines were given an average rating and therefore the dataset is normally distributed.
 
-```{r}
-ggplot(wines, aes(factor(quality))) + geom_histogram(fill="blue") + ggtitle('Histogram of Water Quality') + xlab('Wine Quality')
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(wines, aes(factor(quality))) + geom_histogram(fill="blue") + ggtitle('Histogram of Wine Quality') + xlab('Wine Quality [1-10]')
 ```
 
 ## Relationship between pH, alcohol and quality
 This plot was created to show the relationship between pH, alcohol and quality and how quality red wines tend to have a higher alcohol level coupled with lower pH.
 
-```{r}
-ggplot(wines, aes(pH, alcohol, color=rank)) + geom_point() + ggtitle('Relationship between pH, alcohol and rank') + ylab("Amount of Alcohol") + xlab('pH level')
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(wines, aes(pH, alcohol, color=rank)) + geom_point() + ggtitle('Relationship between pH, alcohol and rank') + ylab("Amount of Alcohol [%]") + xlab('pH level [0-14]')
 ```
 
 ## How strong is the relationship with alcohol
 These box plots emphasize the strong positive correlation between alcohol and wine quality.
-```{r}
-ggplot(wines, aes(quality, alcohol, fill=rank)) + geom_boxplot() + ggtitle("Relationship alcohol and quality") + xlab('Wine Quality') + ylab('Amount of Alcohol')
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(wines, aes(factor(quality), alcohol, fill=rank)) + geom_boxplot() + ggtitle("Relationship between alcohol and quality") + xlab('Wine Quality [1-10]') + ylab('Amount of Alcohol [%]')
 ```
 
 # Reflection
 Through this assignment I was able to learn more about wines and the factors attributed to their quality. However, as the majority of wines were given an average rating this dataset is not necessarily the end all of analysis in this area. This is likely due to the fact that the quality of wines are often subjective for each individual.
+
+Through this analysis I think the largest struggle for me was deciding the appropriate plots to use in the analysis. Ultimately I decided that distribution analysis seemed to be the best way to approach the ranking of quality, so I relied mostly on histograms, scatter plots and box plots. 
+
+I think the greatest success was having a set of graphs by the time I arrived at the final section with which I can use to come up with a reasonable story and conclusion. Coming from a business background, it was exciting approaching a problem from an analytical perspective rather than merely empircally or theoretically.
 
 In the future, I would like to do a more detailed breakdown of the different factors that affect the quality of the red wine. Perhaps data on the demographics and psychographics of the wine experts would be interesting to look at as well. I feel that my results merely confirmed suspicions I had before combing through the dataset.
 
